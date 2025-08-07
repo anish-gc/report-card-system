@@ -75,17 +75,7 @@ class Mark(BaseModel):
     def __str__(self):
         return f"{self.report_card.student.name} - {self.subject.code}: {self.score}"
 
-    def save(self, *args, **kwargs):
-        """Override save to calculate grade and update report card aggregates"""
-      
-
-        super().save(*args, **kwargs)
-
-        # Update report card aggregated data
-        # self.report_card.calculate_aggregated_data()
-        # self.report_card.save(
-        #     update_fields=["total_subjects", "average_score", "total_score"]
-        # )
+   
 
     @property
     def percentage(self):

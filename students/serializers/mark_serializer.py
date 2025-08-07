@@ -12,9 +12,7 @@ from students.serializers.subject_serializer import SubjectReadSerializer
 from utilities import global_parameters
 from utilities.base_serializer import ReadBaseSerializer, WriteBaseSerializer
 from utilities.custom_exception_class import CustomAPIException
-from utilities.global_functions import validate_unique_fields
 from decimal import Decimal
-from django.db import transaction
 import logging
 
 logger = logging.getLogger("django")
@@ -75,18 +73,16 @@ class MarkWriteSerializer(WriteBaseSerializer):
 class MarkReadSerializer(ReadBaseSerializer):
     """Optimized read serializer for marks with minimal queries."""
     
-    id = serializers.IntegerField(read_only=True)
     subject = SubjectReadSerializer(read_only=True)
     score = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
     remarks = serializers.CharField(read_only=True)
-    isActive = serializers.BooleanField(source="is_active", read_only=True)
 
 
 class MarkSummarySerializer(serializers.Serializer):
     """Lightweight serializer for mark summaries without subject details."""
     
     referenceId = serializers.CharField(read_only=True,source='id')
-    subjectreferenceId = serializers.IntegerField(read_only=True,source="subject.id")
+    subjectreferenceId = serializers.CharField(read_only=True,source="subject.id")
     subjectName = serializers.CharField(source="subject.name", read_only=True)
     subjectCode = serializers.CharField(source="subject.code", read_only=True)
     score = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)

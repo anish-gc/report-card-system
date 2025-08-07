@@ -141,29 +141,66 @@ class ReportCardReadSerializer(ReadBaseSerializer):
     studentName = serializers.CharField(source="student.name", read_only=True)
     term = serializers.CharField(read_only=True)
     year = serializers.IntegerField(read_only=True)
-    totalSubjects = serializers.IntegerField(read_only=True, source="total_subjects")
-    averageScore = serializers.DecimalField(
-        max_digits=5, decimal_places=2, read_only=True, source="average_score"
-    )
-    totalScore = serializers.DecimalField(
-        max_digits=8, decimal_places=2, read_only=True, source="total_score"
-    )
+    
+    # Use calculated fields from database annotations (preferred approach)
+    totalSubjects = serializers.SerializerMethodField()
+    averageScore = serializers.SerializerMethodField()
+    totalScore = serializers.SerializerMethodField()
+    highestScore = serializers.SerializerMethodField()
+    lowestScore = serializers.SerializerMethodField()
+    
     marks = MarkSummarySerializer(many=True, read_only=True)
 
-    # Calculated fields from annotations (if available)
-    calculated_average = serializers.DecimalField(
-        max_digits=5, decimal_places=2, read_only=True, required=False
-    )
-    calculated_total = serializers.DecimalField(
-        max_digits=8, decimal_places=2, read_only=True, required=False
-    )
-    subject_count = serializers.IntegerField(read_only=True, required=False)
-    highest_score = serializers.DecimalField(
-        max_digits=5, decimal_places=2, read_only=True, required=False
-    )
-    lowest_score = serializers.DecimalField(
-        max_digits=5, decimal_places=2, read_only=True, required=False
-    )
+    def get_totalSubjects(self, obj):
+        """Get total subjects count."""
+        if hasattr(obj, 'subject_count'):
+            return obj.subject_count
+        return getattr(obj, 'total_subjects', obj.marks.count() if obj.marks.exists() else 0)
+    
+    def get_averageScore(self, obj):
+        """Get average score with proper decimal formatting."""
+      
+        if hasattr(obj, 'average_score'):
+            return f"{obj.average_score:.2f}"
+        else:
+            # Fallback calculation if needed
+            marks = obj.marks.all()
+            if marks:
+                total = sum(float(mark.score) for mark in marks)
+                return f"{total / len(marks):.2f}"
+            return "0.00"
+    
+    def get_totalScore(self, obj):
+        """Get total score with proper decimal formatting."""
+       
+        if hasattr(obj, 'total_score'):
+            return f"{obj.total_score:.2f}"
+        else:
+            # Fallback calculation if needed
+            marks = obj.marks.all()
+            if marks:
+                return f"{sum(float(mark.score) for mark in marks):.2f}"
+            return "0.00"
+    
+    def get_highestScore(self, obj):
+        """Get highest score."""
+     
+        # Fallback calculation if needed
+        marks = obj.marks.all()
+        if marks:
+            return f"{max(float(mark.score) for mark in marks):.2f}"
+        return "0.00"
+    
+    def get_lowestScore(self, obj):
+        """Get lowest score."""
+      
+        # Fallback calculation if needed
+        marks = obj.marks.all()
+        if marks:
+            return f"{min(float(mark.score) for mark in marks):.2f}"
+        return "0.00"
+
+
 
 
 class ReportCardSummarySerializer(ReadBaseSerializer):
@@ -186,12 +223,23 @@ class ReportCardSummarySerializer(ReadBaseSerializer):
 class StudentYearPerformanceSerializer(serializers.Serializer):
     """Serializer for student's yearly performance summary."""
 
-    student_id = serializers.IntegerField(read_only=True)
+    studentReferenceId = serializers.CharField(read_only=True, source='studentreferenceId')
     year = serializers.IntegerField(read_only=True)
-    subject_averages = serializers.ListField(read_only=True)
-    overall_average = serializers.DecimalField(
-        max_digits=5, decimal_places=2, read_only=True
-    )
+    subjectAverages = serializers.SerializerMethodField()
+    overallAverage = serializers.CharField(read_only=True, source='overall_average')
+
+    def get_subjectAverages(self, obj):
+        """Convert subject averages to camelCase."""
+        subject_averages = obj.get('subject_averages', [])
+        return [
+            {
+                'subjectCode': item.get('subject__code'),
+                'subjectName': item.get('subject__name'),
+                'averageScore': float(item.get('average_score', 0)),
+                'termCount': item.get('term_count', 0)
+            }
+            for item in subject_averages
+        ]
 
 
 class SubjectPerformanceSerializer(serializers.Serializer):

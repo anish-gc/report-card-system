@@ -169,15 +169,15 @@ class ReportCardDetailsApiView(BaseApiView):
             )
         except Exception as exe:
             return self.handle_view_exception(exe)
-        
+
 class StudentPerformanceApiView(BaseApiView):
     """
     API endpoint for student performance analytics.
-    Optimized for aggregation queries.
+    Optimized for aggregation queries with camelCase response.
     """
     db_table_name = 'report_cards'
 
-    def get(self, request, student_id):
+    def get(self, request, pk):
         try:
             year = request.query_params.get('year')
             
@@ -187,28 +187,28 @@ class StudentPerformanceApiView(BaseApiView):
                 )
             
             # Check if student exists
-            if not Student.objects.filter(id=student_id, is_active=True).exists():
+            if not Student.objects.filter(id=pk, is_active=True).exists():
                 return self.handle_custom_api_exception(
                     CustomAPIException("Student not found or inactive.")
                 )
             
-            # Get student's report cards for the year
-            report_cards = ReportCard.objects.get_student_report_cards(
-                student_id, int(year)
+            # Get student's report cards for the year with calculated fields
+            report_cards = ReportCard.objects.get_student_report_cards_optimized(
+                pk, int(year)
             )
             
             # Get yearly performance summary
             performance_summary = ReportCard.objects.calculate_year_averages(
-                student_id, int(year)
+                pk, int(year)
             )
             
-            # Serialize data
+            # Serialize data with camelCase conversion
             report_cards_serializer = ReportCardReadSerializer(report_cards, many=True)
             performance_serializer = StudentYearPerformanceSerializer(performance_summary)
             
             data = {
-                'report_cards': report_cards_serializer.data,
-                'performance_summary': performance_serializer.data
+                'reportCards': report_cards_serializer.data,
+                'performanceSummary': performance_serializer.data
             }
             
             return self.handle_success(

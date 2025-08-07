@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Avg, Sum, Count, F, Prefetch, Q
+from django.db.models import Avg, Sum, Count, F, Prefetch, Q,  Max, Min
 from decimal import Decimal
 from typing import Dict, List, Any, Optional
 
@@ -37,13 +37,32 @@ class ReportCardQuerySet(models.QuerySet):
             lowest_score=models.Min("marks__score"),
         )
 
-    def for_student_year(self, student_id: int, year: int):
+    def for_student_year(self, student_id: str, year: int):
         """Get all report cards for a student in a specific year."""
         return self.filter(student_id=student_id, year=year)
 
 
 class ReportCardManager(models.Manager):
     """Enhanced manager for ReportCard model."""
+
+    def get_student_report_cards_optimized(self, student_id, year):
+        """
+        Get student report cards with all calculations done in database.
+        This eliminates the need for separate calculated fields.
+        """
+        return (
+            self.select_related("student")
+            .prefetch_related("marks__subject")
+            .filter(student_id=student_id, year=year, is_active=True)
+            .annotate(
+                subject_count=Count("marks"),
+                calculated_average=Avg("marks__score"),
+                calculated_total=Sum("marks__score"),
+                highest_score=Max("marks__score"),
+                lowest_score=Min("marks__score"),
+            )
+            .order_by("term")
+        )
 
     def get_queryset(self):
         return ReportCardQuerySet(self.model, using=self._db)
@@ -60,7 +79,7 @@ class ReportCardManager(models.Manager):
     def for_term(self, term: str):
         return self.get_queryset().for_term(term)
 
-    def get_student_report_cards(self, student_id: int, year: int) -> models.QuerySet:
+    def get_student_report_cards(self, student_id: str, year: int) -> models.QuerySet:
         """
         Get all report cards for a student in a given year with aggregated data.
         Optimized for performance with proper prefetching.
@@ -73,7 +92,7 @@ class ReportCardManager(models.Manager):
             .order_by("term")
         )
 
-    def get_detailed_report_card(self, report_card_id: int):
+    def get_detailed_report_card(self, report_card_id: str):
         """Get a single report card with all related data."""
         return (
             self.get_queryset()
@@ -83,7 +102,7 @@ class ReportCardManager(models.Manager):
             .get(id=report_card_id)
         )
 
-    def calculate_year_averages(self, student_id: int, year: int) -> Dict[str, Any]:
+    def calculate_year_averages(self, student_id: str, year: int) -> Dict[str, Any]:
         """
         Calculate average scores per subject and overall average for a year.
         Performs aggregation in the database for efficiency.
@@ -108,10 +127,9 @@ class ReportCardManager(models.Manager):
         overall_avg = Mark.objects.filter(
             report_card__student_id=student_id, report_card__year=year
         ).aggregate(overall_average=Avg("score"))
-
         return {
             "subject_averages": list(marks_qs),
             "overall_average": overall_avg["overall_average"] or Decimal("0.00"),
             "year": year,
-            "student_id": student_id,
+            "studentreferenceId": student_id,
         }
