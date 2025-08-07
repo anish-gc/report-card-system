@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.core.cache import cache
 from django.conf import settings
 
-from typing import List, Set, Dict, Any, Optional, Type,  ClassVar
+from typing import List, Set, Dict, Any, Optional, Type, ClassVar
 import logging
 
 from utilities import global_parameters
@@ -21,7 +21,6 @@ PERMISSION_CACHE_TIMEOUT = getattr(settings, 'PERMISSION_CACHE_TIMEOUT', 300)
 
 
 class CustomPermission(BasePermission):
-
     """
     Enhanced permission system with caching and optimized permission checks.
     
@@ -156,10 +155,16 @@ class BaseApiView(CustomPermissionMixin, HandleResponseMixin):
     _snake_case_cache: Dict[str, str] = {}
 
     def __init__(self, **kwargs):
-        # Dynamically import APIView to avoid circular imports
+        # Import APIView here to avoid circular imports at module level
         from rest_framework.views import APIView
-        self.APIView = APIView
-        super().__init__(**kwargs)
+        
+        # Dynamically inherit from APIView
+        if not any(issubclass(cls, APIView) for cls in self.__class__.__mro__):
+            # If APIView is not in the MRO, we need to ensure proper initialization
+            # This is a workaround for the circular import issue
+            super().__init__(**kwargs)
+        else:
+            super().__init__(**kwargs)
 
     def get_permissions(self) -> List[BasePermission]:
         """
@@ -223,3 +228,18 @@ class BaseApiView(CustomPermissionMixin, HandleResponseMixin):
             )
             
         return None
+
+    @classmethod
+    def as_view(cls, **initkwargs):
+        """
+        Create a view callable from this class.
+        This method dynamically imports APIView to avoid circular imports.
+        """
+        from rest_framework.views import APIView
+        
+        # Create a new class that inherits from both APIView and this class
+        class_name = f"{cls.__name__}WithAPIView"
+        new_class = type(class_name, (APIView, cls), {})
+        
+        # Use APIView's as_view method
+        return new_class.as_view(**initkwargs)

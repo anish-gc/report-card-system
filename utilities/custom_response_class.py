@@ -7,6 +7,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
+from utilities import global_parameters
+from utilities.custom_pagination_class import CustomPagination
 from utilities.global_parameters import (
     DATA,
     ERROR_DETAILS,
@@ -60,7 +62,47 @@ class HandleResponseMixin:
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-    
+    def handle_serializer_data(self, model, serializer_class, many=True, paginate=True, **query):
+        """
+        Handle responses with serialized data, optionally with pagination.
+        
+        Args:
+            model (Model): The Django model to query
+            serializer_class (Serializer): The serializer class to use
+            many (bool): Whether to handle multiple objects (default True)
+            paginate (bool): Whether to paginate results (default True)
+            **query: Additional query parameters for filtering
+            
+        Returns:
+            Response with serialized data, optionally paginated
+        """
+        try:
+            if many:
+                queryset = model.objects.filter(**query)
+                
+                if paginate:
+                    # Initialize paginator
+                    paginator = CustomPagination()
+                    
+                    # Paginate the queryset
+                    page = paginator.paginate_queryset(queryset, self.request)
+                    
+                    if page is not None:
+                        # Serialize the page
+                        serializer = serializer_class(page, many=True)
+                        return paginator.get_paginated_response(serializer.data)
+                
+                # Fallback for non-paginated responses
+                serialized_data = serializer_class(queryset, many=True).data
+            else:
+                model_instance = model.objects.get(**query)
+                serialized_data = serializer_class(model_instance).data
+            
+            message = global_parameters.SUCCESS_JSON | {global_parameters.DATA: serialized_data}
+            return Response(message, status=status.HTTP_200_OK)
+        
+        except Exception as exe:
+            return self.handle_view_exception(exe)
     @staticmethod
     def api_handle_exception() -> Response:
         """
