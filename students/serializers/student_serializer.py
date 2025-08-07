@@ -68,10 +68,7 @@ class StudentSerializer(WriteBaseSerializer):
         return instance
 
 
-
-
 class StudentReadSerializer(ReadBaseSerializer):
     name = serializers.CharField(read_only=True)
     email = serializers.EmailField(read_only=True)
-    dateOfBirth = serializers.DateField(source='date_of_birth', read_only=True)
-   
+    dateOfBirth = serializers.DateField(source="date_of_birth", read_only=True)

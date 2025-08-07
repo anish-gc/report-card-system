@@ -6,7 +6,7 @@ from utilities.base_model import BaseModel
 from django.db.models import Avg, Sum, Count, Q
 from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal
-
+from django.core.exceptions import ValidationError
 
 
 
@@ -58,16 +58,8 @@ class ReportCard(BaseModel):
         help_text="Total score across all subjects",
     )
 
-    # Additional metadata
-    generated_at = models.DateTimeField(
-        auto_now_add=True, help_text="When the report card was generated"
-    )
-    is_published = models.BooleanField(
-        default=False,
-        db_index=True,
-        help_text="Whether the report card is published to students",
-    )
-
+  
+ 
     objects = ReportCardManager()
 
     class Meta:
@@ -80,20 +72,11 @@ class ReportCard(BaseModel):
             models.Index(fields=["student", "year"]),
             models.Index(fields=["year", "term"]),
             models.Index(fields=["student", "year", "term"]),
-            models.Index(fields=["year", "is_published"]),
         ]
 
-    # def clean(self):
-    #     """Custom validation"""
-    #     super().clean()
-    #     current_year = timezone.now().year
-    #     if self.year > current_year + 1:
-    #         raise ValidationError(
-    #             {"year": "Year cannot be more than one year in the future"}
-    #         )
 
-    # def __str__(self):
-    #     return f"{self.student.name} - {self.term} {self.year}"
+    def __str__(self):
+        return f"{self.student.name} - {self.term} {self.year}"
 
     # def calculate_aggregated_data(self):
     #     """Calculate and update aggregated data"""

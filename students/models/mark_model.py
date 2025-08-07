@@ -4,30 +4,13 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
 
+from students.managers.mark_manager import MarkManager
 from students.models.reportcard_model import ReportCard
 from students.models.subject_model import Subject
 from utilities.base_model import BaseModel
 
 
 
-
-class MarkManager(models.Manager):
-    """Custom manager for Mark with performance optimizations"""
-    
-    def with_related(self):
-        """Select related data to avoid N+1 queries"""
-        return self.select_related('report_card__student', 'subject')
-    
-    def for_student_year(self, student, year):
-        """Get marks for a student in a specific year"""
-        return self.filter(report_card__student=student, report_card__year=year)
-    
-    def subject_averages(self, year=None):
-        """Get average scores by subject"""
-        queryset = self.values('subject__name', 'subject__code')
-        if year:
-            queryset = queryset.filter(report_card__year=year)
-        return queryset.annotate(avg_score=Avg('score')).order_by('subject__code')
 
 class Mark(BaseModel):
     """
@@ -107,9 +90,14 @@ class Mark(BaseModel):
     @property
     def percentage(self):
         """Return score as percentage"""
-        return float(self.score)
+        if self.score:
+            return float(self.score)
+        else:
+            return 0
 
     @property
     def is_passing(self):
         """Check if the mark is passing (>= 50)"""
-        return self.score >= 50
+        if self.score:
+            return self.score >= 50
+        return False
