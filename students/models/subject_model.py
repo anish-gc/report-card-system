@@ -22,10 +22,6 @@ class Subject(BaseModel):
         help_text="Unique subject code (e.g., MATH101, ENG201)",
     )
 
-
-  
-
-     
     class Meta:
         db_table = 'subjects'
         verbose_name = 'Subject'
@@ -39,23 +35,4 @@ class Subject(BaseModel):
     def __str__(self):
         return f"{self.code} - {self.name}"
     
-    # def get_average_score(self, year=None, term=None):
-    #     """Get average score for this subject"""
-    #     filters = {'subject': self}
-    #     if year:
-    #         filters['report_card__year'] = year
-    #     if term:
-    #         filters['report_card__term'] = term
-            
-    #     result = Mark.objects.filter(**filters).aggregate(avg_score=Avg('score'))
-    #     return result['avg_score'] or Decimal('0.00')
-
-
-  # def with_mark_stats(self, year=None):
-    #     """Get subjects with mark statistics"""
-    #     year = year or timezone.now().year
-    #     return self.annotate(
-    #         total_marks=Count('marks', filter=Q(marks__report_card__year=year)),
-    #         avg_score=Avg('marks__score', filter=Q(marks__report_card__year=year))
-    #     )
-
+   

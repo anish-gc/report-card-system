@@ -78,7 +78,9 @@ class ReportCardManager(models.Manager):
 
     def for_term(self, term: str):
         return self.get_queryset().for_term(term)
-
+    def with_aggregated_data(self):
+        """Expose the with_aggregated_data method from the queryset"""
+        return self.get_queryset().with_aggregated_data()
     def get_student_report_cards(self, student_id: int, year: int) -> models.QuerySet:
         """
         Get all report cards for a student in a given year with aggregated data.
