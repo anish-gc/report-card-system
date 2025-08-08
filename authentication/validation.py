@@ -15,7 +15,7 @@ import uuid
 
 from accounts.models import Account
 from utilities.custom_encryption_class import AESCipher
-from utilities.custom_exception_class import AuthenticationFailedError
+from utilities.custom_exception_class import AuthenticationFailedError, CustomAPIException
 
 def generate_uuid():
     """Generate a unique UUID for reference_id field."""
@@ -74,9 +74,9 @@ def login_validation(request: HttpRequest) -> Tuple[str, str]:
             
         return username, password
         
-    except AuthenticationFailedError:
+    except AuthenticationFailedError as exc:
         # Re-raise specific authentication errors
-        raise
+        raise CustomAPIException(exc)
     except Exception as e:
         # Log unexpected errors and convert to authentication error
         logger.error(f"Login validation error: {str(e)}", exc_info=True)
