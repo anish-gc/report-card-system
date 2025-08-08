@@ -1,11 +1,8 @@
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal
-from django.core.exceptions import ValidationError
-from django.db.models import Avg
 
 from students.managers.mark_manager import MarkManager
-from students.models.reportcard_model import ReportCard
 from students.models.subject_model import Subject
 from utilities.base_model import BaseModel
 
@@ -62,15 +59,7 @@ class Mark(BaseModel):
     
         ]
 
-    def clean(self):
-        """Custom validation"""
-        super().clean()
-        if self.report_card and self.subject:
-            # Ensure subject is active
-            if not self.subject.is_active:
-                raise ValidationError(
-                    {"subject": "Cannot assign marks to inactive subjects"}
-                )
+
 
     def __str__(self):
         return f"{self.report_card.student.name} - {self.subject.code}: {self.score}"

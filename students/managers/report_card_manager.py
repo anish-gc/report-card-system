@@ -1,7 +1,7 @@
 from django.db import models
-from django.db.models import Avg, Sum, Count, F, Prefetch, Q,  Max, Min
+from django.db.models import Avg, Sum, Count,  Prefetch,   Max, Min
 from decimal import Decimal
-from typing import Dict, List, Any, Optional
+from typing import Dict,Any
 
 
 class ReportCardQuerySet(models.QuerySet):

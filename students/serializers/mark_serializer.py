@@ -9,9 +9,7 @@ from rest_framework import serializers
 from students.models import  Mark
 from students.models.subject_model import Subject
 from students.serializers.subject_serializer import SubjectReadSerializer
-from utilities import global_parameters
 from utilities.base_serializer import ReadBaseSerializer, WriteBaseSerializer
-from utilities.custom_exception_class import CustomAPIException
 from decimal import Decimal
 import logging
 

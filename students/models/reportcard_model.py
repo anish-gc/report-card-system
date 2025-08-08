@@ -3,10 +3,8 @@ from django.db import models
 from students.managers.report_card_manager import ReportCardManager
 from students.models.student_model import Student
 from utilities.base_model import BaseModel
-from django.db.models import Avg, Sum, Count, Q
 from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal
-from django.core.exceptions import ValidationError
 
 
 

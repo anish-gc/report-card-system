@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Avg, Sum, Count, F
+from django.db.models import Avg, Sum, Count
 from decimal import Decimal
 from typing import Dict, List, Any
 
