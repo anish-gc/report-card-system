@@ -102,7 +102,6 @@ class ReportCardWriteSerializer(WriteBaseSerializer):
     @transaction.atomic
     def update(self, instance, validated_data):
         marks_data = validated_data.pop("marks", None)
-
         # Update report card fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -112,6 +111,7 @@ class ReportCardWriteSerializer(WriteBaseSerializer):
         if marks_data is not None:
             # Delete existing marks and create new ones
             # This is simpler than trying to match existing marks
+
             instance.marks.all().delete()
 
             mark_objects = []

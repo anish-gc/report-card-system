@@ -6,6 +6,19 @@ from django.db.models import Model
 ModelType = TypeVar("ModelType", bound=Model)
 
 
+def model_validation(model_name:object, error_msg:str, filter_query:Dict[str,any])->any:
+    try:
+        if not model_name.objects.filter(**filter_query).exists():
+            raise CustomAPIException(error_msg)
+        
+        return model_name.objects.get(**filter_query)
+                
+    except CustomAPIException as exe:
+        raise CustomAPIException(exe.detail)
+    
+    except Exception as exe:
+        raise Exception(exe)
+
 def validate_unique_fields(
     model: Type[ModelType],
     data: Dict[str, Any],

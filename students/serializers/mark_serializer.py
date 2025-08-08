@@ -15,12 +15,14 @@ from utilities.custom_exception_class import CustomAPIException
 from decimal import Decimal
 import logging
 
+from utilities.global_functions import model_validation
+
 logger = logging.getLogger("django")
+
 class MarkWriteSerializer(WriteBaseSerializer):
     """Optimized serializer for creating/updating marks."""
     
-    subject = serializers.PrimaryKeyRelatedField(
-        queryset=Subject.objects.filter(is_active=True),
+    subject = serializers.UUIDField(
         error_messages={
             "required": "Subject is required.",
             "does_not_exist": "Subject does not exist or is inactive.",
@@ -50,15 +52,10 @@ class MarkWriteSerializer(WriteBaseSerializer):
     )
 
     def validate(self, data):
-        try:
-            # Additional validation can be added here if needed
-            return data
-        except CustomAPIException as exe:
-            raise serializers.ValidationError(
-                {global_parameters.ERROR_DETAILS: [exe.detail]}
-            )
-        except Exception as exe:
-            raise Exception(exe)
+        subject_id = data.get('subject')
+        subject_instance = model_validation(Subject, 'Please choose the correct subject', {'id':subject_id})
+        return data | {"subject":subject_instance}
+
 
     def create(self, validated_data):
         return Mark.objects.create(**validated_data)

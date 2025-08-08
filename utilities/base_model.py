@@ -2,7 +2,6 @@ import logging
 
 from django.db import models
 from django.conf import settings
-import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -13,10 +12,7 @@ class BaseModel(models.Model):
     Provides common fields and methods like soft delete, with robust error handling.
     """
 
-    # Audit fields
-    id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True
-    )
+    
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

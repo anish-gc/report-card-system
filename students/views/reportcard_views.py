@@ -100,7 +100,6 @@ class ReportCardCreateListApiView(BaseApiView):
         except CustomAPIException as exe:
             return self.handle_custom_api_exception(exe)
         except Exception as exe:
-            print(exe)
             return self.handle_view_exception(exe)
 
 
