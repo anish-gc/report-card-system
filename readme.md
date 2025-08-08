@@ -224,3 +224,258 @@ edurag-intelligent-teacher-using-rag-and-langchain/
 
 
 ```
+## Student Management
+
+### List Students
+**Endpoint:**  
+`GET /api/students/`
+
+**Query Parameters:**
+- `page` - Page number (default: 1)
+- `page_size` - Items per page (default: 10)
+- `search` - Search by name or email
+- `is_active` - Filter by active status (true/false)
+
+**Successful Response (200 OK):**
+```json
+{
+    "responseCode": "0",
+    "message": "Success",
+    "results": [
+        {
+            "referenceId": "1",
+            "isActive": true,
+            "createdAt": "2025-08-08T20:59:18.555912+05:45",
+            "name": "Manish Khanal",
+            "email": "manishkhanal@gmail.com",
+            "dateOfBirth": "2001-03-15"
+        }
+    ],
+    "count": 1,
+    "pageSize": 10,
+    "currentPage": 1,
+    "totalPages": 1,
+    "links": {
+        "next": null,
+        "previous": null,
+        "first": "http://localhost:8000/students/?page=1",
+        "last": "http://localhost:8000/students/?page=1"
+    }
+}
+```
+
+### Create Student
+**Endpoint:**  
+`POST /students/`
+
+**Request Body:**
+```json
+{
+    "name": "New Student",
+    "email": "new.student@example.com",
+    "dateOfBirth": "2002-05-20",
+    "isActive": true
+}
+```
+
+**Success Response (201 Created):**
+```json
+{
+    "responseCode": "0",
+    "message": "Student created successfully."
+}
+```
+
+**Error Responses:**
+- Duplicate email (400 Bad Request):
+```json
+{
+    "responseCode": "1",
+    "response": "customResponse",
+    "error": "Student with Email 'manishkhanal@gmail.com' already exists."
+}
+```
+
+- Missing required field (400 Bad Request):
+```json
+{
+    "responseCode": "1",
+    "error": "Email field is required"
+}
+```
+
+### Student Detail Operations
+**Endpoint:**  
+`GET/PUT/DELETE /students/<id>/`
+
+**Successful Responses:**
+- Get Student (200 OK):
+```json
+{
+    "responseCode": "0",
+    "message": "Success",
+    "data": {
+        "referenceId": "1",
+        "isActive": true,
+        "createdAt": "2025-08-08T20:59:18.555912+05:45",
+        "name": "Manish Khanal",
+        "email": "manishkhanal@gmail.com",
+        "dateOfBirth": "2001-03-15"
+    }
+}
+```
+
+- Update Student (200 OK):
+```json
+{
+    "responseCode": "0",
+    "message": "Student updated successfully."
+}
+```
+
+
+**Usage Notes:**
+1. All operations require authentication token
+2. `referenceId` is the unique identifier for each student
+3. Dates should be in ISO 8601 format (YYYY-MM-DD)
+4. For PUT operations, include all required fields
+
+
+## Subject Management
+
+### List Subjects
+**Endpoint:**  
+`GET /subjects/`
+
+**Query Parameters:**
+- `page` - Page number (default: 1)
+- `page_size` - Items per page (default: 10)
+
+**Successful Response (200 OK):**
+```json
+{
+    "responseCode": "0",
+    "message": "Success",
+    "results": [
+        {
+            "referenceId": "3",
+            "isActive": true,
+            "createdAt": "2025-08-08T21:00:00.140704+05:45",
+            "name": "English",
+            "code": "ENG101"
+        },
+        {
+            "referenceId": "2",
+            "isActive": true,
+            "createdAt": "2025-08-08T20:59:46.366298+05:45",
+            "name": "Maths",
+            "code": "MTH101"
+        },
+        
+    ],
+    "count": 3,
+    "pageSize": 10,
+    "currentPage": 1,
+    "totalPages": 1,
+    "links": {
+        "next": null,
+        "previous": null,
+        "first": "http://localhost:8000/subjects/?page=1",
+        "last": "http://localhost:8000/subjects/?page=1"
+    }
+}
+```
+
+### Create Subject
+**Endpoint:**  
+`POST /subjects/`
+
+**Request Body:**
+```json
+{
+    "name": "New Subject",
+    "code": "NEW101",
+}
+```
+
+**Success Response (201 Created):**
+```json
+{
+    "responseCode": "0",
+    "message": "Subject created successfully."
+}
+```
+
+**Error Responses:**
+- Duplicate subject code (400 Bad Request):
+```json
+{
+    "responseCode": "1",
+    "response": "customResponse",
+    "error": "Subject with Code 'SCI101' already exists."
+}
+```
+
+- Invalid code format (400 Bad Request):
+```json
+{
+    "responseCode": "1",
+    "response": "customResponse",
+    "error": "Subject code must be 2-4 uppercase letters followed by 2-4 numbers (e.g., MATH101)."
+}
+```
+
+- Missing required field (400 Bad Request):
+```json
+{
+    "responseCode": "2",
+    "error": "Name field is required"
+}
+```
+
+### Subject Detail Operations
+**Endpoint:**  
+`GET/PUT/DELETE /subjects/<id>/`
+
+**Successful Responses:**
+- Get Subject (200 OK):
+```json
+{
+    "responseCode": "0",
+    "message": "Success",
+    "data": {
+        "referenceId": "1",
+        "isActive": true,
+        "createdAt": "2025-08-08T20:59:38.162525+05:45",
+        "name": "Science",
+        "code": "SCI101"
+    }
+}
+```
+
+- Update Subject (200 OK):
+```json
+{
+    "responseCode": "0",
+    "message": "Subject updated successfully."
+}
+```
+
+
+
+- Trying to update to existing code (400 Bad Request):
+```json
+{
+    "responseCode": "1",
+    "error": "Subject code 'MTH101' is already in use"
+}
+```
+
+**Usage Notes:**
+1. Subject `code` must follow the format:
+   - 2-4 uppercase letters
+   - Followed by 2-4 numbers
+   - Example valid codes: `CS101`, `MATH202`, `PHY404`
+2. All operations require authentication token
+3. `referenceId` is the unique identifier for each subject
+4. When updating, you cannot modify the `code` to match an existing subject
