@@ -7,9 +7,11 @@ from students.views.mark_views import (
     SubjectPerformanceApiView,
 )
 from students.views.reportcard_views import (
+    BulkCalculateApiView,
     ReportCardCreateListApiView,
     ReportCardDetailsApiView,
     StudentPerformanceApiView,
+    TaskStatusApiView,
 )
 from students.views.subject_views import SubjectCreateListApiView, SubjectDetailsApiView
 from .views.student_views import StudentCreateListApiView, StudentDetailsApiView
@@ -48,4 +50,6 @@ urlpatterns = [
         SubjectPerformanceApiView.as_view(),
         name="subject-performance",
     ),
+    path('tasks/<str:task_id>/status/', TaskStatusApiView.as_view(), name='task-status'),
+    path('calculations/bulk/', BulkCalculateApiView.as_view(), name='bulk-calculate'),
 ]

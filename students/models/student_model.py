@@ -6,7 +6,7 @@ from utilities.base_model import BaseModel
 class Student(BaseModel):
     """
     Student model with optimized fields and proper validation.
-    Using UUID for better security and scalability.
+    Using id for better security and scalability.
     """
 
     name = models.CharField(

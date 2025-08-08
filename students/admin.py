@@ -39,13 +39,12 @@ class ReportCardAdmin(admin.ModelAdmin):
     )
 
 class MarkAdmin(admin.ModelAdmin):
-    list_display = ('report_card', 'subject', 'score', 'is_passing', 'is_active')
+    list_display = ('report_card', 'subject', 'score',  'is_active')
     list_filter = ('is_active', 'subject', 'report_card__term', 'report_card__year')
     search_fields = ('report_card__student__name', 'subject__name', 'subject__code')
-    readonly_fields = ('created_at', 'updated_at', 'is_passing', 'percentage')
+    readonly_fields = ('created_at', 'updated_at',)
     fieldsets = (
         (None, {'fields': ('report_card', 'subject', 'score', 'remarks', 'is_active')}),
-        ('Calculated Fields', {'fields': ('is_passing', 'percentage')}),
         ('Metadata', {'fields': ('created_at', 'updated_at')}),
     )
 

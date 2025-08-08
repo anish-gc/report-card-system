@@ -20,6 +20,16 @@ class ReportCard(BaseModel):
         ("Term 3", "Term 3"),
         ("Final", "Final Term"),
     ]
+    GRADE_CHOICES = [
+        ('A+', 'A+'),
+        ('A', 'A'),
+        ('B+', 'B+'),
+        ('B', 'B'),
+        ('C+', 'C+'),
+        ('C', 'C'),
+        ('D', 'D'),
+        ('F', 'F'),
+    ]
 
     student = models.ForeignKey(
         Student,
@@ -55,6 +65,38 @@ class ReportCard(BaseModel):
         default=Decimal("0.00"),
         help_text="Total score across all subjects",
     )
+    # New fields for grade and percentage
+    grade = models.CharField(
+        max_length=2,
+        choices=GRADE_CHOICES,
+        blank=True,
+        null=True,
+        help_text="Letter grade based on average score"
+    )
+    percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Percentage score"
+    )
+    
+    # Background task tracking
+    calculation_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('calculating', 'Calculating'),
+            ('completed', 'Completed'),
+            ('failed', 'Failed'),
+        ],
+        default='pending',
+        help_text="Status of background calculations"
+    )
+    last_calculated = models.DateTimeField(
+        null=True, 
+        blank=True,
+        help_text="When calculations were last completed"
+    )
 
   
  
@@ -70,12 +112,19 @@ class ReportCard(BaseModel):
             models.Index(fields=["student", "year"]),
             models.Index(fields=["year", "term"]),
             models.Index(fields=["student", "year", "term"]),
+            models.Index(fields=["calculation_status"]),
         ]
 
 
     def __str__(self):
-        return f"{self.student.name} - {self.term} {self.year}"
-
+        return f"{self.student.name} - {self.term} {self.year} ({self.grade or 'No Grade'})"
+    
+    def needs_calculation(self):
+        """Check if this report card needs background calculation."""
+        return (
+            self.calculation_status in ['pending', 'failed'] or
+            (self.last_calculated and self.updated_at > self.last_calculated)
+        )
 
 
 

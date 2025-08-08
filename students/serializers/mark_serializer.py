@@ -19,7 +19,7 @@ logger = logging.getLogger("django")
 
 class MarkWriteSerializer(WriteBaseSerializer):
     """Optimized serializer for creating/updating marks."""
-    
+   
     subject = serializers.IntegerField(
         error_messages={
             "required": "Subject is required.",
@@ -51,6 +51,7 @@ class MarkWriteSerializer(WriteBaseSerializer):
 
     def validate(self, data):
         subject_reference_id = data.get('subject')
+
         subject = model_validation(Subject, 'Please choose the correct subject', {'id':subject_reference_id})
         return data | {"subject":subject}
 

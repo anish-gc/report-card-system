@@ -58,7 +58,6 @@ class ReportCardWriteSerializer(WriteBaseSerializer):
         # If updating, exclude the current instance
         if self.instance:
             existing_query = existing_query.exclude(pk=self.instance.pk)
-
         if existing_query.exists():
             raise CustomAPIException(
                 f"Report card for student {student}, for {term}, and year {year} already exists."
@@ -117,7 +116,6 @@ class ReportCardWriteSerializer(WriteBaseSerializer):
                         remarks=mark_data.get("remarks", ""),
                     )
                 )
-
             if mark_objects:
                 Mark.objects.bulk_create(mark_objects)
 
@@ -142,6 +140,14 @@ class ReportCardReadSerializer(serializers.Serializer):
     totalScore = serializers.SerializerMethodField()
     highestScore = serializers.SerializerMethodField()
     lowestScore = serializers.SerializerMethodField()
+    
+    # New fields for grade and percentage
+    grade = serializers.CharField(read_only=True)
+    percentage = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
+    
+    # Calculation status fields
+    calculationStatus = serializers.CharField(source="calculation_status", read_only=True)
+    lastCalculated = serializers.DateTimeField(source="last_calculated", read_only=True)
 
     marks = MarkSummarySerializer(many=True, read_only=True)
 
@@ -155,7 +161,6 @@ class ReportCardReadSerializer(serializers.Serializer):
 
     def get_averageScore(self, obj):
         """Get average score with proper decimal formatting."""
-
         if hasattr(obj, "average_score"):
             return f"{obj.average_score:.2f}"
         else:
@@ -168,7 +173,6 @@ class ReportCardReadSerializer(serializers.Serializer):
 
     def get_totalScore(self, obj):
         """Get total score with proper decimal formatting."""
-
         if hasattr(obj, "total_score"):
             return f"{obj.total_score:.2f}"
         else:
@@ -180,8 +184,6 @@ class ReportCardReadSerializer(serializers.Serializer):
 
     def get_highestScore(self, obj):
         """Get highest score."""
-
-        # Fallback calculation if needed
         marks = obj.marks.all()
         if marks:
             return f"{max(float(mark.score) for mark in marks):.2f}"
@@ -189,8 +191,6 @@ class ReportCardReadSerializer(serializers.Serializer):
 
     def get_lowestScore(self, obj):
         """Get lowest score."""
-
-        # Fallback calculation if needed
         marks = obj.marks.all()
         if marks:
             return f"{min(float(mark.score) for mark in marks):.2f}"
@@ -211,6 +211,9 @@ class ReportCardSummarySerializer(ReadBaseSerializer):
     totalScore = serializers.DecimalField(
         max_digits=8, decimal_places=2, read_only=True, source="total_score"
     )
+    grade = serializers.CharField(read_only=True)
+    percentage = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
+    calculationStatus = serializers.CharField(source="calculation_status", read_only=True)
     isActive = serializers.BooleanField(source="is_active", read_only=True)
 
 

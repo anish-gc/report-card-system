@@ -65,18 +65,3 @@ class Mark(BaseModel):
         return f"{self.report_card.student.name} - {self.subject.code}: {self.score}"
 
    
-
-    @property
-    def percentage(self):
-        """Return score as percentage"""
-        if self.score:
-            return float(self.score)
-        else:
-            return 0
-
-    @property
-    def is_passing(self):
-        """Check if the mark is passing (>= 50)"""
-        if self.score:
-            return self.score >= 50
-        return False
