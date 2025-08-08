@@ -479,3 +479,456 @@ edurag-intelligent-teacher-using-rag-and-langchain/
 2. All operations require authentication token
 3. `referenceId` is the unique identifier for each subject
 4. When updating, you cannot modify the `code` to match an existing subject
+
+
+## Report Card Management
+
+### Create Report Card
+**Endpoint:**  
+`POST /report-cards/`
+
+**Request Body:**
+```json
+{
+    "student": "2",
+    "term": "Term 1",
+    "year": "2025",
+    "marks": [
+        {
+            "subject": "1",
+            "score": "80"
+        },
+        {
+            "subject": "2",
+            "score": "80"
+        },
+        {
+            "subject": "3",
+            "score": "99"
+        }
+    ]
+}
+```
+
+**Success Response (201 Created):**
+```json
+{
+    "responseCode": "0",
+    "message": "Report card created successfully. Calculations are being processed in the background.",
+    "data": {
+        "reportCardreferenceId": "2",
+        "studentReferenceId": "2",
+        "studentName": "Mandip Khanal",
+        "term": "Term 1",
+        "year": 2025,
+        "totalSubjects": 3,
+        "averageScore": "86.33",
+        "totalScore": "259.00",
+        "highestScore": "99.00",
+        "lowestScore": "80.00",
+        "grade": null,
+        "percentage": "0.00",
+        "calculationStatus": "calculating",
+        "lastCalculated": null,
+        "marks": [
+            {
+                "marksReferenceId": "72",
+                "subjectreferenceId": "3",
+                "subjectName": "English",
+                "subjectCode": "ENG101",
+                "score": "99.00",
+                "remarks": ""
+            },
+            {
+                "marksReferenceId": "71",
+                "subjectreferenceId": "2",
+                "subjectName": "Maths",
+                "subjectCode": "MTH101",
+                "score": "80.00",
+                "remarks": ""
+            },
+            {
+                "marksReferenceId": "70",
+                "subjectreferenceId": "1",
+                "subjectName": "Science",
+                "subjectCode": "SCI101",
+                "score": "80.00",
+                "remarks": ""
+            }
+        ],
+        "calculationTaskId": "576a9740-6cd2-4346-b39c-e0c82fc4a646"
+    }
+}
+```
+
+**Error Responses:**
+- Invalid term (400 Bad Request):
+```json
+{
+    "responseCode": "1",
+    "response": "failed",
+    "error": "Invalid term choice. Please choose Term 1, Term 2, Term 3 or Final"
+}
+```
+
+- Duplicate report card (400 Bad Request):
+```json
+{
+    "responseCode": "1",
+    "error": "Report card already exists for this student, term and year combination"
+}
+```
+
+### List Report Cards
+**Endpoint:**  
+`GET /api/report-cards/`
+
+**Query Parameters:**
+- `year` - Filter by academic year (e.g., 2025)
+- `term` - Filter by term ("Term 1", "Term 2", "Term 3", "Final")
+- `student_id` - Filter by student reference ID
+- `detailed` - Include full mark details (true/false, default: false)
+- `include_class_stats` - Include class statistics (true/false, default: false)
+
+**Successful Response (200 OK):**
+```json
+{
+    "responseCode": "0",
+    "message": "Report cards retrieved successfully.",
+    "data": {
+        "report_cards": [
+            {
+                "reportCardreferenceId": "2",
+                "studentReferenceId": "2",
+                "studentName": "Mandip Khanal",
+                "term": "Term 1",
+                "year": 2025,
+                "totalSubjects": 3,
+                "averageScore": "86.33",
+                "totalScore": "259.00",
+                "highestScore": "99.00",
+                "lowestScore": "80.00",
+                "grade": null,
+                "percentage": "0.00",
+                "calculationStatus": "calculating",
+                "lastCalculated": null,
+                "marks": [
+                    {
+                        "marksReferenceId": "72",
+                        "subjectreferenceId": "3",
+                        "subjectName": "English",
+                        "subjectCode": "ENG101",
+                        "score": "99.00",
+                        "remarks": ""
+                    },
+                    {
+                        "marksReferenceId": "71",
+                        "subjectreferenceId": "2",
+                        "subjectName": "Maths",
+                        "subjectCode": "MTH101",
+                        "score": "80.00",
+                        "remarks": ""
+                    },
+                    {
+                        "marksReferenceId": "70",
+                        "subjectreferenceId": "1",
+                        "subjectName": "Science",
+                        "subjectCode": "SCI101",
+                        "score": "80.00",
+                        "remarks": ""
+                    }
+                ]
+            }
+        ]
+    }
+}
+```
+
+### Retrieve Report Card
+**Endpoint:**  
+`GET /report-cards/<id>/`
+
+**Successful Response (200 OK):**
+```json
+{
+    "responseCode": "0",
+    "message": "Report card retrieved successfully.",
+    "data": {
+        "reportCardreferenceId": "1",
+        "studentReferenceId": "1",
+        "studentName": "Manish Khanal Updated",
+        "term": "Term 1",
+        "year": 2025,
+        "totalSubjects": 3,
+        "averageScore": "90.00",
+        "totalScore": "270.00",
+        "highestScore": "90.00",
+        "lowestScore": "90.00",
+        "grade": "A",
+        "percentage": "90.00",
+        "calculationStatus": "completed",
+        "lastCalculated": "2025-08-08T22:35:40.378368+05:45",
+        "marks": [
+            {
+                "marksReferenceId": "69",
+                "subjectreferenceId": "3",
+                "subjectName": "English",
+                "subjectCode": "ENG101",
+                "score": "90.00",
+                "remarks": ""
+            },
+            {
+                "marksReferenceId": "68",
+                "subjectreferenceId": "2",
+                "subjectName": "Maths",
+                "subjectCode": "MTH101",
+                "score": "90.00",
+                "remarks": ""
+            },
+            {
+                "marksReferenceId": "67",
+                "subjectreferenceId": "1",
+                "subjectName": "Science",
+                "subjectCode": "SCI101",
+                "score": "90.00",
+                "remarks": ""
+            }
+        ]
+    }
+}
+```
+
+### Update Report Card
+**Endpoint:**  
+`PUT /report-cards/<id>/`
+
+**Request Body:**
+```json
+{
+    "term": "Term 1",
+    "year": "2025",
+    "marks": [
+        {
+            "subject": "1",
+            "score": "90"
+        },
+        {
+            "subject": "2",
+            "score": "90"
+        },
+        {
+            "subject": "3",
+            "score": "90"
+        }
+    ]
+}
+```
+
+**Success Response (200 OK):**
+```json
+{
+    "responseCode": "0",
+    "message": "Report card updated successfully. Calculations are being processed in the background.",
+    "data": {
+        "reportCardreferenceId": "1",
+        "studentReferenceId": "1",
+        "studentName": "Manish Khanal Updated",
+        "term": "Term 1",
+        "year": 2025,
+        "totalSubjects": 3,
+        "averageScore": "90.00",
+        "totalScore": "270.00",
+        "highestScore": "90.00",
+        "lowestScore": "90.00",
+        "grade": "A",
+        "percentage": "90.00",
+        "calculationStatus": "calculating",
+        "lastCalculated": "2025-08-08T22:35:40.378368+05:45",
+        "marks": [
+            {
+                "marksReferenceId": "75",
+                "subjectreferenceId": "3",
+                "subjectName": "English",
+                "subjectCode": "ENG101",
+                "score": "90.00",
+                "remarks": ""
+            },
+            {
+                "marksReferenceId": "74",
+                "subjectreferenceId": "2",
+                "subjectName": "Maths",
+                "subjectCode": "MTH101",
+                "score": "90.00",
+                "remarks": ""
+            },
+            {
+                "marksReferenceId": "73",
+                "subjectreferenceId": "1",
+                "subjectName": "Science",
+                "subjectCode": "SCI101",
+                "score": "90.00",
+                "remarks": ""
+            }
+        ],
+        "calculationTaskId": "18dddd6f-daae-4101-9b5c-0cbaf72cc4a7"
+    }
+}
+```
+
+**Usage Notes:**
+1. Valid term values: "Term 1", "Term 2", "Term 3", "Final"
+2. Calculations are processed asynchronously - check status using the task ID
+3. When updating, all marks must be included (full replacement, not partial update)
+4. The `calculationStatus` can be: "pending", "calculating", "completed", or "failed"
+5. For large datasets, use `detailed=false` when listing to improve performance
+6. Class statistics (when requested) include: class average, highest/lowest scores, grade distribution
+
+
+
+## Student Performance Analysis
+
+### Get Student Performance
+**Endpoint:**  
+`GET /students/<student_id>/performance/`
+
+**Description:**  
+Retrieves comprehensive performance data for a specific student including all report cards and subject-wise averages for a given year.
+
+**Required Query Parameter:**
+- `year` - Academic year to analyze (e.g., 2025)
+
+**Successful Response (200 OK):**
+```json
+{
+    "responseCode": "0",
+    "message": "Student performance retrieved successfully. Some calculations are being updated in the background.",
+    "data": {
+        "reportCards": [
+            {
+                "reportCardreferenceId": "1",
+                "studentReferenceId": "1",
+                "studentName": "Manish Khanal Updated",
+                "term": "Term 1",
+                "year": 2025,
+                "totalSubjects": 3,
+                "averageScore": "90.00",
+                "totalScore": "270.00",
+                "highestScore": "90.00",
+                "lowestScore": "90.00",
+                "grade": "A",
+                "percentage": "90.00",
+                "calculationStatus": "calculating",
+                "lastCalculated": "2025-08-08T22:35:40.378368+05:45",
+                "marks": [
+                    {
+                        "marksReferenceId": "75",
+                        "subjectreferenceId": "3",
+                        "subjectName": "English",
+                        "subjectCode": "ENG101",
+                        "score": "90.00",
+                        "remarks": ""
+                    },
+                    {
+                        "marksReferenceId": "74",
+                        "subjectreferenceId": "2",
+                        "subjectName": "Maths",
+                        "subjectCode": "MTH101",
+                        "score": "90.00",
+                        "remarks": ""
+                    },
+                    {
+                        "marksReferenceId": "73",
+                        "subjectreferenceId": "1",
+                        "subjectName": "Science",
+                        "subjectCode": "SCI101",
+                        "score": "90.00",
+                        "remarks": ""
+                    }
+                ]
+            }
+        ],
+        "performanceSummary": {
+            "studentReferenceId": "1",
+            "year": 2025,
+            "subjectAverages": [
+                {
+                    "subjectCode": "ENG101",
+                    "subjectName": "English",
+                    "averageScore": 90.0,
+                    "termCount": 1
+                },
+                {
+                    "subjectCode": "MTH101",
+                    "subjectName": "Maths",
+                    "averageScore": 90.0,
+                    "termCount": 1
+                },
+                {
+                    "subjectCode": "SCI101",
+                    "subjectName": "Science",
+                    "averageScore": 90.0,
+                    "termCount": 1
+                }
+            ],
+            "overallAverage": "90.0000000000000000"
+        },
+        "backgroundTasks": {
+            "performance_calculation_task_id": "0a0a9e1a-880f-4dbb-8879-d8eb80cb7c47",
+            "report_cards_being_calculated": [
+                {
+                    "reporCardId": "1",
+                    "taskId": "d5cc5593-c1be-4f3e-9852-efd595c0c9dd"
+                }
+            ]
+        }
+    }
+}
+```
+
+**Error Responses:**
+- Missing year parameter (400 Bad Request):
+```json
+{
+    "responseCode": "1",
+    "error": "Year parameter is required"
+}
+```
+
+- Invalid student ID (404 Not Found):
+```json
+{
+    "responseCode": "3",
+    "error": "Student not found"
+}
+```
+
+- No data for specified year (404 Not Found):
+```json
+{
+    "responseCode": "4",
+    "error": "No performance data available for the specified year"
+}
+```
+
+**Usage Notes:**
+1. The endpoint provides three main data sections:
+   - `reportCards`: All report cards for the student in the specified year
+   - `performanceSummary`: Aggregated performance metrics including:
+     - Subject-wise averages
+     - Overall average score
+     - Term participation count
+   - `backgroundTasks`: Information about ongoing calculations
+
+2. Performance calculations may be processed asynchronously:
+   - Check status using the provided task IDs
+   - `calculationStatus` values: "pending", "calculating", "completed", "failed"
+
+3. The response includes detailed mark breakdowns for each report card
+
+4. Example cURL request:
+```bash
+curl -X GET "http://localhost:8000/api/students/1/performance/?year=2025" \
+  -H "Authorization: Token your_token_here"
+```
+
+5. For large datasets, the response may be paginated (check for `next` and `previous` links in the response)
