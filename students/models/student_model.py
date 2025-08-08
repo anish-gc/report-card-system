@@ -1,9 +1,6 @@
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
-from django.core.exceptions import ValidationError
-from django.db.models import Avg, Sum, Count, Q
+
 from utilities.base_model import BaseModel
-from django.utils import timezone
 
 
 class Student(BaseModel):
@@ -14,17 +11,15 @@ class Student(BaseModel):
 
     name = models.CharField(
         max_length=100,
-        db_index=True,  # Index for search performance
+        db_index=True, 
         help_text="Full name of the student",
     )
     email = models.EmailField(
         unique=True,
-        db_index=True,  # Index for lookup performance
+        db_index=True,  
         help_text="Unique email address",
     )
     date_of_birth = models.DateField(help_text="Student's date of birth")
-
- 
 
     class Meta:
         db_table = "students"
@@ -35,9 +30,6 @@ class Student(BaseModel):
             models.Index(fields=["name", "is_active"]),
             models.Index(fields=["email", "is_active"]),
         ]
-    
 
-  
     def __str__(self):
         return f"{self.name} ({self.email})"
-
