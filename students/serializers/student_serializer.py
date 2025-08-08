@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
 from students.models.student_model import Student
-from utilities import global_parameters
 from utilities.base_serializer import ReadBaseSerializer, WriteBaseSerializer
 from utilities.custom_exception_class import CustomAPIException
 from utilities.global_functions import validate_unique_fields
@@ -42,21 +41,12 @@ class StudentSerializer(WriteBaseSerializer):
     )
 
     def validate(self, data):
+        date_of_birth = data.get("date_of_birth")
+        if date_of_birth and date_of_birth > timezone.now().date():
+            raise CustomAPIException("Date of birth cannot be in the future.")
+        validate_unique_fields(Student, data, ["email"], self.instance, "Student")
 
-        try:
-            date_of_birth = data.get("date_of_birth")
-            if date_of_birth and date_of_birth > timezone.now().date():
-                raise CustomAPIException("Date of birth cannot be in the future.")
-            validate_unique_fields(Student, data, ["email"], self.instance, "Student")
-
-            return data
-        except CustomAPIException as exe:
-            raise serializers.ValidationError(
-                {global_parameters.ERROR_DETAILS: [exe.detail]}
-            )
-
-        except Exception as exe:
-            raise Exception(exe)
+        return data
 
     def create(self, validated_data):
         return Student.objects.create(**validated_data)

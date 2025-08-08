@@ -1,0 +1,27 @@
+update_report_card = {
+    "student": "2",
+    "term": "Term 1",
+    "year": "2025",
+    "marks": [
+        {
+            "subject": "1",
+            "score": "99"
+        },
+        {
+            "subject": "2",
+            "score": "99"
+        },
+        {
+            "subject": "3",
+            "score": "99"
+        },
+        {
+            "subject": "4",
+            "score": "99"
+        },
+        {
+            "subject": "5",
+            "score": "99"
+        }
+    ]
+}

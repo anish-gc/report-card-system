@@ -11,14 +11,13 @@ from rest_framework import serializers
 from django.db import transaction
 
 from utilities.custom_exception_class import CustomAPIException
-from utilities.global_functions import validate_unique_fields
+from utilities.global_functions import model_validation, validate_unique_fields
 
 
 class ReportCardWriteSerializer(WriteBaseSerializer):
     """Optimized serializer for creating/updating report cards."""
 
-    student = serializers.PrimaryKeyRelatedField(
-        queryset=Student.objects.filter(is_active=True),
+    student = serializers.IntegerField(
         error_messages={
             "required": "Student is required to create reportcard.",
             "does_not_exist": "Student does not exist or is inactive.",
@@ -29,7 +28,7 @@ class ReportCardWriteSerializer(WriteBaseSerializer):
         choices=ReportCard.TERM_CHOICES,
         error_messages={
             "required": "Term is required.",
-            "invalid_choice": "Invalid term choice.Please choose Term1, Term2, Term3 or Final",
+            "invalid_choice": "Invalid term choice.Please choose Term 1, Term 2, Term 3 or Final",
         },
     )
 
@@ -46,32 +45,26 @@ class ReportCardWriteSerializer(WriteBaseSerializer):
     marks = MarkWriteSerializer(many=True, required=False)
 
     def validate(self, data):
-        try:
-            student = data.get("student")
-            term = data.get("term")
-            year = data.get("year")
+        student_reference_id = data.get("student")
+        student = model_validation(Student, 'Please provide the correct student to create reportcard', {"id":student_reference_id})
+        term = data.get("term")
+        year = data.get("year")
 
-            # Build the query for existing records
-            existing_query = ReportCard.objects.filter(
-                student=student, term=term, year=year, is_active=True
+        # Build the query for existing records
+        existing_query = ReportCard.objects.filter(
+            student=student, term=term, year=year, is_active=True
+        )
+
+        # If updating, exclude the current instance
+        if self.instance:
+            existing_query = existing_query.exclude(pk=self.instance.pk)
+
+        if existing_query.exists():
+            raise CustomAPIException(
+                f"Report card for student {student}, for {term}, and year {year} already exists."
             )
-
-            # If updating, exclude the current instance
-            if self.instance:
-                existing_query = existing_query.exclude(pk=self.instance.pk)
-
-            if existing_query.exists():
-                raise CustomAPIException(
-                    f"Report card for student {student}, term {term}, and year {year} already exists."
-                )
-            return data
-        except CustomAPIException as exe:
-            raise serializers.ValidationError(
-                {global_parameters.ERROR_DETAILS: [exe.detail]}
-            )
-
-        except Exception as exe:
-            raise Exception(exe)
+        return data | {"student": student}
+       
 
     @transaction.atomic
     def create(self, validated_data):
@@ -134,33 +127,36 @@ class ReportCardWriteSerializer(WriteBaseSerializer):
         return instance
 
 
-class ReportCardReadSerializer(ReadBaseSerializer):
+class ReportCardReadSerializer(serializers.Serializer):
     """Optimized read serializer for report cards with all details."""
+    reportCardreferenceId = serializers.CharField(source="id", read_only=True)
 
     studentReferenceId = serializers.CharField(source="student.id", read_only=True)
     studentName = serializers.CharField(source="student.name", read_only=True)
     term = serializers.CharField(read_only=True)
     year = serializers.IntegerField(read_only=True)
-    
+
     # Use calculated fields from database annotations (preferred approach)
     totalSubjects = serializers.SerializerMethodField()
     averageScore = serializers.SerializerMethodField()
     totalScore = serializers.SerializerMethodField()
     highestScore = serializers.SerializerMethodField()
     lowestScore = serializers.SerializerMethodField()
-    
+
     marks = MarkSummarySerializer(many=True, read_only=True)
 
     def get_totalSubjects(self, obj):
         """Get total subjects count."""
-        if hasattr(obj, 'subject_count'):
+        if hasattr(obj, "subject_count"):
             return obj.subject_count
-        return getattr(obj, 'total_subjects', obj.marks.count() if obj.marks.exists() else 0)
-    
+        return getattr(
+            obj, "total_subjects", obj.marks.count() if obj.marks.exists() else 0
+        )
+
     def get_averageScore(self, obj):
         """Get average score with proper decimal formatting."""
-      
-        if hasattr(obj, 'average_score'):
+
+        if hasattr(obj, "average_score"):
             return f"{obj.average_score:.2f}"
         else:
             # Fallback calculation if needed
@@ -169,11 +165,11 @@ class ReportCardReadSerializer(ReadBaseSerializer):
                 total = sum(float(mark.score) for mark in marks)
                 return f"{total / len(marks):.2f}"
             return "0.00"
-    
+
     def get_totalScore(self, obj):
         """Get total score with proper decimal formatting."""
-       
-        if hasattr(obj, 'total_score'):
+
+        if hasattr(obj, "total_score"):
             return f"{obj.total_score:.2f}"
         else:
             # Fallback calculation if needed
@@ -181,26 +177,24 @@ class ReportCardReadSerializer(ReadBaseSerializer):
             if marks:
                 return f"{sum(float(mark.score) for mark in marks):.2f}"
             return "0.00"
-    
+
     def get_highestScore(self, obj):
         """Get highest score."""
-     
+
         # Fallback calculation if needed
         marks = obj.marks.all()
         if marks:
             return f"{max(float(mark.score) for mark in marks):.2f}"
         return "0.00"
-    
+
     def get_lowestScore(self, obj):
         """Get lowest score."""
-      
+
         # Fallback calculation if needed
         marks = obj.marks.all()
         if marks:
             return f"{min(float(mark.score) for mark in marks):.2f}"
         return "0.00"
-
-
 
 
 class ReportCardSummarySerializer(ReadBaseSerializer):
@@ -223,20 +217,22 @@ class ReportCardSummarySerializer(ReadBaseSerializer):
 class StudentYearPerformanceSerializer(serializers.Serializer):
     """Serializer for student's yearly performance summary."""
 
-    studentReferenceId = serializers.CharField(read_only=True, source='studentreferenceId')
+    studentReferenceId = serializers.CharField(
+        read_only=True, source="studentreferenceId"
+    )
     year = serializers.IntegerField(read_only=True)
     subjectAverages = serializers.SerializerMethodField()
-    overallAverage = serializers.CharField(read_only=True, source='overall_average')
+    overallAverage = serializers.CharField(read_only=True, source="overall_average")
 
     def get_subjectAverages(self, obj):
         """Convert subject averages to camelCase."""
-        subject_averages = obj.get('subject_averages', [])
+        subject_averages = obj.get("subject_averages", [])
         return [
             {
-                'subjectCode': item.get('subject__code'),
-                'subjectName': item.get('subject__name'),
-                'averageScore': float(item.get('average_score', 0)),
-                'termCount': item.get('term_count', 0)
+                "subjectCode": item.get("subject__code"),
+                "subjectName": item.get("subject__name"),
+                "averageScore": float(item.get("average_score", 0)),
+                "termCount": item.get("term_count", 0),
             }
             for item in subject_averages
         ]

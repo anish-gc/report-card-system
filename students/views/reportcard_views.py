@@ -169,6 +169,7 @@ class ReportCardDetailsApiView(BaseApiView):
         except Exception as exe:
             return self.handle_view_exception(exe)
 
+
 class StudentPerformanceApiView(BaseApiView):
     """
     API endpoint for student performance analytics.

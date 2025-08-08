@@ -6,6 +6,7 @@ from utilities.custom_exception_class import CustomAPIException
 from utilities.global_functions import validate_unique_fields
 import re
 
+
 class SubjectSerializer(WriteBaseSerializer):
     name = serializers.CharField(
         max_length=100,
@@ -26,22 +27,15 @@ class SubjectSerializer(WriteBaseSerializer):
     )
 
     def validate(self, data):
-        try:
-            code = data.get("code", "")
-            if not re.match(r"^[A-Z]{2,4}[0-9]{2,4}$", code):
-                raise CustomAPIException(
+
+        code = data.get("code", "")
+        if not re.match(r"^[A-Z]{2,4}[0-9]{2,4}$", code):
+            raise CustomAPIException(
                 "Subject code must be 2-4 uppercase letters followed by 2-4 numbers (e.g., MATH101)."
             )
-           
 
-            validate_unique_fields(Subject, data, ["code"], self.instance, "Subject")
-            return data
-        except CustomAPIException as exe:
-            raise serializers.ValidationError(
-                {global_parameters.ERROR_DETAILS: [exe.detail]}
-            )
-        except Exception as exe:
-            raise Exception(exe)
+        validate_unique_fields(Subject, data, ["code"], self.instance, "Subject")
+        return data
 
     def create(self, validated_data):
         return Subject.objects.create(**validated_data)

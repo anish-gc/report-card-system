@@ -37,7 +37,7 @@ class ReportCardQuerySet(models.QuerySet):
             lowest_score=models.Min("marks__score"),
         )
 
-    def for_student_year(self, student_id: str, year: int):
+    def for_student_year(self, student_id: int, year: int):
         """Get all report cards for a student in a specific year."""
         return self.filter(student_id=student_id, year=year)
 
@@ -79,7 +79,7 @@ class ReportCardManager(models.Manager):
     def for_term(self, term: str):
         return self.get_queryset().for_term(term)
 
-    def get_student_report_cards(self, student_id: str, year: int) -> models.QuerySet:
+    def get_student_report_cards(self, student_id: int, year: int) -> models.QuerySet:
         """
         Get all report cards for a student in a given year with aggregated data.
         Optimized for performance with proper prefetching.

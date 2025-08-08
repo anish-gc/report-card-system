@@ -116,37 +116,22 @@ class HandleResponseMixin:
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     
-
     @staticmethod
-    def handle_invalid_serializer(serializer: Serializer) -> Response:
+    def handle_invalid_serializer(serializer):
         """
-        Create a standardized response for serializer validation errors.
-        
-        This method logs the validation errors for debugging and returns
-        a properly formatted 400 response with just the first error message.
-        
-        Args:
-            serializer: The serializer instance containing validation errors
-            
-        Returns:
-            Response object with 400 status code and first validation error
+        Handle responses with serializer errors and log the errors.
         """
         logger.error(f"Serializer validation failed: {serializer.errors}", exc_info=True)
-        
-        # Get the first error message from the serializer errors
         first_error = None
         for field_errors in serializer.errors.values():
             if field_errors:
                 first_error = str(field_errors[0])  # Convert ErrorDetail to string
                 break
-        
-        response_data = {
-            "responseCode": "1",
-            "response": "customFieldResponse",
-            "error": first_error if first_error else "Validation error occurred"
+        message = global_parameters.UNSUCCESS_JSON | {
+            global_parameters.ERROR_DETAILS:first_error if first_error else "Validation error occurred"
         }
-        
-        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(message, status=status.HTTP_400_BAD_REQUEST)
+  
 
     @staticmethod
     def handle_custom_api_exception(exc: Exception) -> Response:
@@ -196,7 +181,6 @@ class HandleResponseMixin:
             Response object with appropriate status code and error details
         """
         logger.error(f"View exception: {str(exc)}", exc_info=True)
-        
         if isinstance(exc, (ObjectDoesNotExist, Http404)):
             return self.handle_does_not_exist(str(exc))
         # Handle DRF's APIException if needed

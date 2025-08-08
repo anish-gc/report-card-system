@@ -52,7 +52,7 @@ RESPONSE_UNSUCCESS_MESSAGE: Final[str] = "failed"
 
 #: Message for custom error responses
 RESPONSE_CUSTOM_UNSUCCESS_MESSAGE: Final[str] = "customResponse"
-RESPONSE_CUSTOM_SERIALIZER_UNSUCCESS_MESSAGE: Final[str] = "customFieldResponse"
+# RESPONSE_CUSTOM_SERIALIZER_UNSUCCESS_MESSAGE: Final[str] = "customFieldResponse"
 
 #: Message for successful login
 LOGIN_RESPONSE_SUCCESS_MESSAGE: Final[str] = "You are logged in successfully"
@@ -73,11 +73,11 @@ UNSUCCESS_JSON: Final[Dict[str, str]] = {
     RESPONSE_MESSAGE_TYPE: RESPONSE_UNSUCCESS_MESSAGE
 }
 
-
-UNSUCCESS_SERIALIZER_JSON: Final[Dict[str, str]] = {
-    RESPONSE_CODE: UNSUCCESS_CODE,
-    RESPONSE_MESSAGE_TYPE: RESPONSE_CUSTOM_SERIALIZER_UNSUCCESS_MESSAGE
-}
+# 
+# UNSUCCESS_SERIALIZER_JSON: Final[Dict[str, str]] = {
+#     RESPONSE_CODE: UNSUCCESS_CODE,
+#     RESPONSE_MESSAGE_TYPE: RESPONSE_CUSTOM_SERIALIZER_UNSUCCESS_MESSAGE
+# }
 #: Template for custom error responses
 UNSUCCESS_CUSTOM_JSON: Final[Dict[str, str]] = {
     RESPONSE_CODE: UNSUCCESS_CODE,

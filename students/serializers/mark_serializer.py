@@ -22,7 +22,7 @@ logger = logging.getLogger("django")
 class MarkWriteSerializer(WriteBaseSerializer):
     """Optimized serializer for creating/updating marks."""
     
-    subject = serializers.UUIDField(
+    subject = serializers.IntegerField(
         error_messages={
             "required": "Subject is required.",
             "does_not_exist": "Subject does not exist or is inactive.",
@@ -52,9 +52,9 @@ class MarkWriteSerializer(WriteBaseSerializer):
     )
 
     def validate(self, data):
-        subject_id = data.get('subject')
-        subject_instance = model_validation(Subject, 'Please choose the correct subject', {'id':subject_id})
-        return data | {"subject":subject_instance}
+        subject_reference_id = data.get('subject')
+        subject = model_validation(Subject, 'Please choose the correct subject', {'id':subject_reference_id})
+        return data | {"subject":subject}
 
 
     def create(self, validated_data):
@@ -78,7 +78,7 @@ class MarkReadSerializer(ReadBaseSerializer):
 class MarkSummarySerializer(serializers.Serializer):
     """Lightweight serializer for mark summaries without subject details."""
     
-    referenceId = serializers.CharField(read_only=True,source='id')
+    marksReferenceId = serializers.CharField(read_only=True,source='id')
     subjectreferenceId = serializers.CharField(read_only=True,source="subject.id")
     subjectName = serializers.CharField(source="subject.name", read_only=True)
     subjectCode = serializers.CharField(source="subject.code", read_only=True)
